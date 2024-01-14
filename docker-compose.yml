@@ -1,0 +1,51 @@
+version: "3.9"
+services:
+  master:
+    build: .
+    environment:
+      - NODE_NAMES=node1 node2
+      - HEARTBEAT_INTERVAL=3
+    ports:
+      - "8000:8000"
+    container_name: master
+    command: python -u ./master.py
+      - master
+    networks:
+      - master
+  sub1:
+    build: sub/
+    environment:
+      - NAME=node1
+      - MASTER=master
+      - MASTER_PORT=8000
+      - HEARTBEAT_INTERVAL=3
+      - LATENCY=1
+    ports:
+      - "8080:8080"
+    container_name: node1
+    command: python -u ./sub.py
+    depends_on:
+      - master
+    networks:
+      - master
+
+  sub2:
+    build: sub/
+    environment:
+      - NAME=node2
+      - MASTER=master
+      - MASTER_PORT=8000
+      - HEARTBEAT_INTERVAL=3
+      - LATENCY=3
+    ports:
+      - "8090:8080"
+    container_name: node2
+    command: python -u ./sub.py
+    depends_on:
+      - master
+    networks:
+      - master
+
+networks:
+  master:
+    driver: bridge
